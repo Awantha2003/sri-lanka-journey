@@ -1,32 +1,41 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config(); // Load .env file
+// sri-lanka-journey/backend/server.js
+
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+
+// Import route files
+const authRoutes = require("./routes/authRoutes");
+const itineraryRoutes = require("./routes/itineraryRoutes");
+const matchRoutes = require("./routes/matchRoutes");
+const tripRoutes = require("./routes/tripRoutes"); // ✅ NEW: Save trip route
+
+// Load environment variables
+dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
-// Middlewares
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Read from .env file
-const PORT = process.env.PORT || 5000;
-const MONGO_URL = process.env.MONGO_URL;
+// API Routes
+app.use("/api/auth", authRoutes);                    // /api/auth/register, /api/auth/login
+app.use("/api/generate-itinerary", itineraryRoutes); // /api/generate-itinerary (POST)
+app.use("/api", matchRoutes);                        // /api/match-options?city=... (GET)
+app.use("/api", tripRoutes);                         // ✅ /api/save-trip (POST)
 
-// MongoDB connection
-mongoose.connect(MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.error('❌ MongoDB connection error:', err));
-
-// Test route
-app.get('/', (req, res) => {
-  res.send('🌴 Welcome to Sri Lanka Journey API');
+// Root endpoint (health check)
+app.get("/", (req, res) => {
+  res.send("🌍 Sri Lanka Journey API is running...");
 });
 
 // Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });

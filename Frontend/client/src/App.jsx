@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-function App() {
-  const [count, setCount] = useState(0)
+import { Header } from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
+import { HeroSection } from './components/home/HeroSection';
+import { SearchSection } from './components/home/SearchSection';
+import { PopularDestinations } from './components/home/PopularDestinations';
+import { ActivitiesCarousel } from './components/home/ActivitiesCarousel';
+import { TestimonialsSection } from './components/home/TestimonialsSection';
 
+import { Dashboard } from './pages/admin/Dashboard';
+import { Login } from './pages/auth/Login';
+import { AiTripPlanner } from './components/trip-planner/AiTripPlanner';
+import ItineraryForm from './components/ItineraryForm';
+import ItineraryDashboard from './pages/ItineraryDashboard'; // ✅ New import
+
+import { AuthProvider } from './contexts/AuthContext';
+import { BookingProvider } from './contexts/BookingContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+
+function Home() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="flex flex-col min-h-screen w-full bg-white">
+      <Header />
+      <main className="flex-grow">
+        <HeroSection />
+        <SearchSection />
+        <PopularDestinations />
+        <ActivitiesCarousel />
+        <TestimonialsSection />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export function App() {
+  return (
+    <AuthProvider>
+      <BookingProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/plan-trip" element={<AiTripPlanner />} />
+            <Route path="/generate-itinerary" element={<ItineraryForm />} />
+            <Route path="/itinerary-dashboard" element={<ItineraryDashboard />} /> {/* ✅ New route */}
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </BookingProvider>
+    </AuthProvider>
+  );
+}
+
+export default App;
