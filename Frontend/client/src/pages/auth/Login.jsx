@@ -11,13 +11,16 @@ export function Login() {
   const location = useLocation();
   const auth = useAuth();
 
-  const from = location.state?.from?.pathname || '/admin';
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await auth.login({ email, password });
-      navigate(from, { replace: true });
+
+      // Get role from saved user info
+      const role = JSON.parse(localStorage.getItem("user"))?.role;
+      const redirectTo = role === "admin" ? "/admin" : "/planner";
+
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setError('Invalid credentials');
     }

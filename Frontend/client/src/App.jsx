@@ -11,9 +11,10 @@ import { TestimonialsSection } from './components/home/TestimonialsSection';
 
 import { Dashboard } from './pages/admin/Dashboard';
 import { Login } from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import { AiTripPlanner } from './components/trip-planner/AiTripPlanner';
 import ItineraryForm from './components/ItineraryForm';
-import ItineraryDashboard from './pages/ItineraryDashboard'; // ✅ New import
+import ItineraryDashboard from './pages/ItineraryDashboard';
 
 import { AuthProvider } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
@@ -41,11 +42,15 @@ export function App() {
       <BookingProvider>
         <Router>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/plan-trip" element={<AiTripPlanner />} />
-            <Route path="/generate-itinerary" element={<ItineraryForm />} />
-            <Route path="/itinerary-dashboard" element={<ItineraryDashboard />} /> {/* ✅ New route */}
+            <Route path="/planner" element={<ItineraryForm />} />
+            <Route path="/itinerary-dashboard" element={<ItineraryDashboard />} />
+
+            {/* Protected Admin Route */}
             <Route
               path="/admin/*"
               element={
@@ -54,6 +59,8 @@ export function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

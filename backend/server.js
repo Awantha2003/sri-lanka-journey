@@ -1,15 +1,7 @@
-// sri-lanka-journey/backend/server.js
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-
-// Import route files
-const authRoutes = require("./routes/authRoutes");
-const itineraryRoutes = require("./routes/itineraryRoutes");
-const matchRoutes = require("./routes/matchRoutes");
-const tripRoutes = require("./routes/tripRoutes"); // ✅ NEW: Save trip route
 
 // Load environment variables
 dotenv.config();
@@ -17,19 +9,26 @@ dotenv.config();
 // Connect to MongoDB
 connectDB();
 
+// Initialize app
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// API Routes
-app.use("/api/auth", authRoutes);                    // /api/auth/register, /api/auth/login
-app.use("/api/generate-itinerary", itineraryRoutes); // /api/generate-itinerary (POST)
-app.use("/api", matchRoutes);                        // /api/match-options?city=... (GET)
-app.use("/api", tripRoutes);                         // ✅ /api/save-trip (POST)
+// Import routes
+const authRoutes = require("./routes/authRoutes");
+const itineraryRoutes = require("./routes/itineraryRoutes");
+const matchRoutes = require("./routes/matchRoutes");       // For auto-matching hotel, vehicle, etc.
+const tripRoutes = require("./routes/tripRoutes");         // For saving user's trip
 
-// Root endpoint (health check)
+// Use routes
+app.use("/api/auth", authRoutes);                          // /api/auth/register, /login
+app.use("/api/generate-itinerary", itineraryRoutes);       // /api/generate-itinerary (POST)
+app.use("/api", matchRoutes);                              // e.g., /api/match-options?city=Kandy
+app.use("/api", tripRoutes);                               // e.g., /api/save-trip (POST)
+
+// Health check
 app.get("/", (req, res) => {
   res.send("🌍 Sri Lanka Journey API is running...");
 });
