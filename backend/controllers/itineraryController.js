@@ -1,4 +1,4 @@
-// backend/controllers/itineraryController.js
+const axios = require("axios");
 const places = require("../data/places");
 const hotels = require("../data/hotels");
 const vehicles = require("../data/vehicles");
@@ -32,6 +32,28 @@ function getHotelForGroup(category, budget, groupSize) {
   return { name, rooms };
 }
 
+// Utility: Geocode a city to get lat/lng
+async function geocodeCity(city) {
+  try {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const response = await axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json`,
+      {
+        params: {
+          address: city + ', Sri Lanka',
+          key: apiKey,
+        },
+      }
+    );
+
+    const location = response.data.results?.[0]?.geometry?.location;
+    return location || { lat: null, lng: null };
+  } catch (error) {
+    console.error(`❌ Geocoding failed for ${city}:`, error.message);
+    return { lat: null, lng: null };
+  }
+}
+
 exports.generateItinerary = async (req, res) => {
   const {
     days = 10,
@@ -40,13 +62,11 @@ exports.generateItinerary = async (req, res) => {
     budget = "mid"
   } = req.body;
 
-  // Input validation
   if (!days || days < 1 || !groupSize || groupSize < 1 || !Array.isArray(categories)) {
     return res.status(400).json({ msg: "Invalid trip settings. Please provide valid days, group size, and categories." });
   }
 
   try {
-    // Collect all places from selected categories
     const matchedPlaces = places.filter(p => categories.includes(p.category));
 
     const flatPlaces = matchedPlaces.flatMap(cat =>
@@ -61,15 +81,26 @@ exports.generateItinerary = async (req, res) => {
       return res.status(404).json({ msg: "No matching places found for selected categories." });
     }
 
-    // Limit to number of days
     const selected = flatPlaces.slice(0, days);
 
     const itinerary = [];
+
     for (let i = 0; i < selected.length; i++) {
       const entry = selected[i];
-      const weather = await getWeatherForCity(entry.city);
+
+      // 🌦️ Get weather with fallback
+      let weather;
+      try {
+        weather = await getWeatherForCity(entry.city);
+      } catch (err) {
+        weather = { description: "Weather unavailable" };
+        console.warn(`⚠️ Weather fetch failed for ${entry.city}: ${err.message}`);
+      }
+
       const hotelInfo = getHotelForGroup(entry.category, budget, groupSize);
       const vehicleInfo = getVehicleForGroup(entry.category, groupSize);
+
+      const geo = await geocodeCity(entry.city);
 
       itinerary.push({
         day: i + 1,
@@ -78,13 +109,13 @@ exports.generateItinerary = async (req, res) => {
         hotel: `${hotelInfo.name} (x${hotelInfo.rooms} rooms)`,
         vehicle: `${vehicleInfo.type} × ${vehicleInfo.count}`,
         weather,
-        lat: null,
-        lng: null
+        lat: geo.lat,
+        lng: geo.lng
       });
     }
 
     const newItinerary = await Itinerary.create({
-      user: req.user.id,
+      user: req.user?.id || "guest",
       days: itinerary.length,
       itinerary,
     });

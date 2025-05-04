@@ -1,5 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -16,7 +21,11 @@ import { AiTripPlanner } from './components/trip-planner/AiTripPlanner';
 import ItineraryForm from './components/ItineraryForm';
 import ItineraryDashboard from './pages/ItineraryDashboard';
 import NearbySuggestions from './pages/NearbySuggestions';
-import TravelTime from './pages/TravelTime'; // ✅ New import
+import TravelTime from './pages/TravelTime';
+import AdminTourManager from './pages/admin/AdminTourManager'; // ✅
+
+import TourList from './pages/TourList';       // ✅ Tour list page
+import TourDetails from './pages/TourDetails'; // ✅ Tour details page
 
 import { AuthProvider } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
@@ -52,9 +61,24 @@ export function App() {
             <Route path="/planner" element={<ItineraryForm />} />
             <Route path="/itinerary-dashboard" element={<ItineraryDashboard />} />
             <Route path="/nearby" element={<NearbySuggestions />} />
-            <Route path="/travel" element={<TravelTime />} /> {/* ✅ New route */}
+            <Route path="/travel" element={<TravelTime />} />
+            <Route path="/tours" element={<TourList />} />             {/* ✅ All tours */}
+            <Route path="/tours/:id" element={<TourDetails />} />      {/* ✅ Single tour */}
+                 
+            import AdminTourManager from './pages/admin/AdminTourManager'; // ✅
 
-            {/* Protected Admin Route */}
+<Route
+  path="/admin/tours"
+  element={
+    <ProtectedRoute>
+      <AdminTourManager />
+    </ProtectedRoute>
+  }
+/>
+
+
+
+            {/* Admin Route (Protected) */}
             <Route
               path="/admin/*"
               element={
@@ -64,7 +88,7 @@ export function App() {
               }
             />
 
-            {/* Catch-all */}
+            {/* Fallback Route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

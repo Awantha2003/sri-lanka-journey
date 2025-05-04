@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const categoryOptions = [
   { label: '🏯 Cultural Triangle', value: 'Cultural Triangle (Ancient Cities)' },
@@ -35,7 +36,8 @@ const categoryOptions = [
   { label: '🛶 Island Hopping', value: 'Island Hopping & Boat Safaris' },
 ];
 
-function ItineraryForm({ onItineraryReady }) {
+function ItineraryForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     days: 3,
     groupSize: 2,
@@ -43,7 +45,7 @@ function ItineraryForm({ onItineraryReady }) {
     budget: 'mid',
   });
 
-  const [itinerary, setItinerary] = useState(null);
+  const [generatedItinerary, setGeneratedItinerary] = useState(null);
 
   const toggleCategory = (value) => {
     const current = form.categories;
@@ -70,23 +72,22 @@ function ItineraryForm({ onItineraryReady }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const generated = response.data;
-      setItinerary(generated);
-
-      if (onItineraryReady) {
-        onItineraryReady(generated.itinerary);
-      }
+      setGeneratedItinerary(response.data.itinerary);
     } catch (error) {
       console.error('❌ Error:', error.response?.data || error.message);
       alert(error.response?.data?.msg || 'Failed to generate itinerary');
     }
   };
 
+  const handleAccept = () => {
+    navigate('/itinerary-dashboard', { state: { itinerary: generatedItinerary } });
+  };
+
   return (
     <div className="p-6 bg-white shadow-lg rounded-md w-full max-w-3xl mx-auto">
       <h2 className="text-2xl font-semibold mb-4 text-emerald-700">🌍 Plan Your Sri Lanka Journey</h2>
 
-      {/* Days & Group */}
+      {/* Form Inputs */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block font-medium">Days:</label>
@@ -95,9 +96,7 @@ function ItineraryForm({ onItineraryReady }) {
             min="1"
             className="w-full border p-2 rounded"
             value={form.days}
-            onChange={(e) =>
-              setForm({ ...form, days: parseInt(e.target.value) || 1 })
-            }
+            onChange={(e) => setForm({ ...form, days: parseInt(e.target.value) || 1 })}
           />
         </div>
 
@@ -108,14 +107,11 @@ function ItineraryForm({ onItineraryReady }) {
             min="1"
             className="w-full border p-2 rounded"
             value={form.groupSize}
-            onChange={(e) =>
-              setForm({ ...form, groupSize: parseInt(e.target.value) || 1 })
-            }
+            onChange={(e) => setForm({ ...form, groupSize: parseInt(e.target.value) || 1 })}
           />
         </div>
       </div>
 
-      {/* Budget */}
       <div className="mb-4">
         <label className="block font-medium">Budget:</label>
         <select
@@ -129,7 +125,6 @@ function ItineraryForm({ onItineraryReady }) {
         </select>
       </div>
 
-      {/* Selected Categories (Cart-style) */}
       {form.categories.length > 0 && (
         <div className="mb-4">
           <label className="block font-medium">🎒 Selected Categories:</label>
@@ -143,7 +138,6 @@ function ItineraryForm({ onItineraryReady }) {
         </div>
       )}
 
-      {/* Category Selector */}
       <div className="mb-6">
         <label className="block font-medium mb-2">🧭 Select Interests:</label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -171,23 +165,36 @@ function ItineraryForm({ onItineraryReady }) {
         🚀 Generate Itinerary
       </button>
 
-      {/* Generated Itinerary */}
-      {itinerary && itinerary.itinerary && (
-        <div className="mt-8">
-          <h3 className="text-xl font-bold mb-3 text-emerald-800">📅 Your Smart Itinerary</h3>
-          {itinerary.itinerary.map((day, index) => (
-            <div key={index} className="mb-4 p-4 border rounded bg-gray-50">
-              <h4 className="font-semibold mb-1">Day {index + 1}</h4>
-              <p><strong>City:</strong> {day.city}</p>
-              <p><strong>Places:</strong> {day.places.join(', ')}</p>
-              <p><strong>Hotel:</strong> {day.hotel}</p>
-              <p><strong>Weather:</strong> {day.weather.condition} ({day.weather.temperature}°C)</p>
-              <p><strong>Vehicle:</strong> {day.vehicle}</p>
-              {day.lat && day.lng && (
-                <p><strong>Coordinates:</strong> {day.lat}, {day.lng}</p>
-              )}
-            </div>
-          ))}
+      {/* Preview Section */}
+      {generatedItinerary && (
+        <div className="mt-8 border-t pt-6">
+          <h3 className="text-xl font-semibold mb-3 text-gray-800">🗓️ Preview Itinerary</h3>
+          <ul className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            {generatedItinerary.map((day) => (
+              <li key={day.day} className="p-4 bg-gray-50 rounded shadow-sm">
+                <strong>Day {day.day} - {day.city}</strong><br />
+                📍 Place: {day.places.join(", ")}<br />
+                🏨 Hotel: {day.hotel}<br />
+                🚗 Vehicle: {day.vehicle}<br />
+                🌤️ Weather: {day.weather?.description || 'N/A'}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-4 flex justify-end gap-4">
+            <button
+              onClick={() => setGeneratedItinerary(null)}
+              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+            >
+              ❌ Cancel
+            </button>
+            <button
+              onClick={handleAccept}
+              className="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded"
+            >
+              ✅ Accept Plan
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -12,6 +12,7 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  PlaneTakeoff, // ✅ New icon for Tour Packages
 } from 'lucide-react';
 
 export function AdminSidebar({ isOpen, setIsOpen }) {
@@ -22,6 +23,7 @@ export function AdminSidebar({ isOpen, setIsOpen }) {
     { icon: Users, label: 'Users', href: '/admin/users' },
     { icon: Calendar, label: 'Bookings', href: '/admin/bookings' },
     { icon: Map, label: 'Destinations', href: '/admin/destinations' },
+    { icon: PlaneTakeoff, label: 'Tour Packages', href: '/admin/tours' }, // ✅ Added
     { icon: FileText, label: 'Content', href: '/admin/content' },
     { icon: BarChart2, label: 'Analytics', href: '/admin/analytics' },
     { icon: MessageSquare, label: 'Messages', href: '/admin/messages' },
@@ -59,6 +61,5 @@ export function AdminSidebar({ isOpen, setIsOpen }) {
     </aside>
   );
 }
-
 
 export default AdminSidebar;

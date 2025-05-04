@@ -1,49 +1,57 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 const connectDB = require("./config/db");
 
-// Load environment variables FIRST
+// ✅ Load environment variables FIRST
 dotenv.config();
 
-// Check for essential environment variables
+// ✅ Check required environment variable
 if (!process.env.GOOGLE_MAPS_API_KEY) {
-  console.error("❌ GOOGLE_MAPS_API_KEY not found in .env");
+  console.error("❌ Missing GOOGLE_MAPS_API_KEY in .env file");
   process.exit(1);
 }
 
-// Connect to MongoDB
+// ✅ Connect to MongoDB
 connectDB();
 
-// Initialize express app
+// ✅ Initialize Express app
 const app = express();
 
-// Middleware
+// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// ✅ Serve static files from /uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ✅ Import Routes
 const authRoutes = require("./routes/authRoutes");
 const itineraryRoutes = require("./routes/itineraryRoutes");
 const matchRoutes = require("./routes/matchRoutes");
 const tripRoutes = require("./routes/tripRoutes");
 const nearbyRoutes = require("./routes/nearbyRoutes");
-const travelRoutes = require("./routes/travelRoutes"); // ✅ Travel info route
+const travelRoutes = require("./routes/travelRoutes");
+const tourRoutes = require("./routes/tourRoutes"); // ✅ NEW: Tour Packages
+const uploadRoutes = require("./routes/uploadRoutes"); // ✅ NEW: Local Image Upload
 
-// Mount routes
-app.use("/api/auth", authRoutes);                    // /api/auth/register, /login
-app.use("/api/generate-itinerary", itineraryRoutes); // /api/generate-itinerary (POST)
-app.use("/api", matchRoutes);                         // /api/match-options?city=Kandy
-app.use("/api", tripRoutes);                          // /api/save-trip (POST)
-app.use("/api", nearbyRoutes);                        // /api/nearby-suggestions?lat=..&lng=..&type=..
-app.use("/api", travelRoutes);                        // ✅ /api/travel-info?origin=..&destination=..
+// ✅ Mount Routes
+app.use("/api/auth", authRoutes);                       // /api/auth/register, /api/auth/login
+app.use("/api/generate-itinerary", itineraryRoutes);    // /api/generate-itinerary (POST)
+app.use("/api", matchRoutes);                           // /api/match-options
+app.use("/api", tripRoutes);                            // /api/save-trip
+app.use("/api", nearbyRoutes);                          // /api/nearby-suggestions
+app.use("/api", travelRoutes);                          // /api/travel-info
+app.use("/api/tours", tourRoutes);                      // ✅ NEW: /api/tours CRUD
+app.use("/api/upload", uploadRoutes);                   // ✅ NEW: Local upload endpoint
 
-// Health Check
+// ✅ Health check endpoint
 app.get("/", (req, res) => {
   res.send("🌍 Sri Lanka Journey API is running...");
 });
 
-// Start Server
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
