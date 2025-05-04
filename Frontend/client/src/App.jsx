@@ -15,6 +15,8 @@ import Register from './pages/auth/Register';
 import { AiTripPlanner } from './components/trip-planner/AiTripPlanner';
 import ItineraryForm from './components/ItineraryForm';
 import ItineraryDashboard from './pages/ItineraryDashboard';
+import NearbySuggestions from './pages/NearbySuggestions';
+import TravelTime from './pages/TravelTime'; // ✅ New import
 
 import { AuthProvider } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
@@ -49,6 +51,8 @@ export function App() {
             <Route path="/plan-trip" element={<AiTripPlanner />} />
             <Route path="/planner" element={<ItineraryForm />} />
             <Route path="/itinerary-dashboard" element={<ItineraryDashboard />} />
+            <Route path="/nearby" element={<NearbySuggestions />} />
+            <Route path="/travel" element={<TravelTime />} /> {/* ✅ New route */}
 
             {/* Protected Admin Route */}
             <Route
